@@ -40,10 +40,15 @@ def detect(cfgfile, weightfile, namesfile):
 
         class_names = load_class_names(namesfile)
         bbox_info = get_boxes_info(Image.fromarray(img), boxes, class_names=class_names)
-        osc_msg = make_osc(bbox_info)
-        client.send_message("/index", len(bbox_info))
-        client.send(osc_msg)
-
+        if len(bbox_info) != 0:
+            osc_msg = make_osc(bbox_info)
+            client.send_message("/index", len(bbox_info))
+            client.send(osc_msg)
+        else:
+            zero = [[0, 0, 0, 0]]
+            osc_msg = make_osc(zero)
+            client.send_message("/index", len(bbox_info))
+            client.send(osc_msg)
 
         mask = np.zeros_like(img)
         for box in bbox_info:
