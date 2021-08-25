@@ -7,8 +7,6 @@ from deeplab.utils import *
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-client = udp_client.SimpleUDPClient("127.0.0.1", 3296)
-
 def make_osc(input_list):
     msg = osc_message_builder.OscMessageBuilder(address= "/bbox")
     for values in input_list:
