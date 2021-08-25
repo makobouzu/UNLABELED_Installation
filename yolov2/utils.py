@@ -205,7 +205,7 @@ def get_boxes_info(img, boxes, savename=None, class_names=None):
         if len(box) >= 7 and class_names:
             cls_conf = box[5]
             cls_id = box[6]
-            array = [int(cls_id), str(class_names[cls_id]), (int(x1), int(y1)), (int(x2), int(y2))]
+            array = [int(x1), int(y1), int(x2), int(y2)]
             output.append(array)
     return output
 

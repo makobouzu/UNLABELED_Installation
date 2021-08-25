@@ -4,7 +4,18 @@ from PIL import Image, ImageDraw
 from yolov2.utils import *
 from yolov2.darknet import Darknet
 from deeplab.utils import *
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
 
+client = udp_client.SimpleUDPClient("127.0.0.1", 3296)
+
+def make_osc(input_list):
+    msg = osc_message_builder.OscMessageBuilder(address= "/bbox")
+    for values in input_list:
+        for value in values:
+            msg.add_arg(value)
+    msg = msg.build()
+    return msg
 
 def detect(cfgfile, weightfile, namesfile):
     yolo = Darknet(cfgfile)
@@ -31,9 +42,14 @@ def detect(cfgfile, weightfile, namesfile):
 
         class_names = load_class_names(namesfile)
         bbox_info = get_boxes_info(Image.fromarray(img), boxes, class_names=class_names)
+        osc_msg = make_osc(bbox_info)
+        client.send_message("/index", len(bbox_info))
+        client.send(osc_msg)
+
+
         mask = np.zeros_like(img)
         for box in bbox_info:
-            cv2.rectangle(mask, box[2], box[3], (255, 255, 255), thickness=-1)
+            cv2.rectangle(mask, (box[0], box[1]), (box[2], box[3]), (255, 255, 255), thickness=-1)
         bbox_mask = cv2.bitwise_and(img, mask)
 
         img = plot_boxes(Image.fromarray(img), boxes, class_names=class_names)
@@ -56,4 +72,5 @@ def detect(cfgfile, weightfile, namesfile):
 
 
 if __name__ == '__main__':
-  detect('yolov2/cfg/yolo.cfg', 'yolov2/weights/yolo.weights', 'yolov2/data/coco.names')
+    client = udp_client.SimpleUDPClient("127.0.0.1", 3296)
+    detect('yolov2/cfg/yolo.cfg', 'yolov2/weights/yolo.weights', 'yolov2/data/coco.names')
